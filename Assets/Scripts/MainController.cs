@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace VladB.Doka
@@ -10,6 +9,7 @@ namespace VladB.Doka
         public UnitsManager UnitsManager;
         public InputManager_PC InputManager_PC;
         public TouchRaycaster TouchRaycaster;
+        public UIController UIController;
 
         private void Awake()
         {
@@ -26,6 +26,8 @@ namespace VladB.Doka
             UnitsManager.Init();
             InputManager_PC.Init();
             TouchRaycaster.Init();
+
+            UIController.Init();
         }
     }
 }
