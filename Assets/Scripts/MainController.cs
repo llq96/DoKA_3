@@ -10,6 +10,7 @@ namespace VladB.Doka
         public InputManager_PC InputManager_PC;
         public TouchRaycaster TouchRaycaster;
         public UIController UIController;
+        public GameCamera GameCamera;
 
         private void Awake()
         {
@@ -26,6 +27,8 @@ namespace VladB.Doka
             UnitsManager.Init();
             InputManager_PC.Init();
             TouchRaycaster.Init();
+
+            GameCamera.Init();
 
             UIController.Init();
         }

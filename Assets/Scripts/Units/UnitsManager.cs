@@ -15,6 +15,7 @@ namespace VladB.Doka
         public void Init()
         {
             _units = _unitsParent.GetComponentsInChildren<Unit>(true).ToList();
+            _units.ForEach(x => x.Init());
             Player = _units.First(x => x is Player) as Player;
         }
     }

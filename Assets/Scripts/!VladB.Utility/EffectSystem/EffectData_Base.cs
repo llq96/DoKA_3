@@ -1,53 +1,56 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using VladB.Utility;
 
-namespace VladB.EffectsSystem {
+namespace VladB.EffectsSystem
+{
     [System.Serializable]
-    public class EffectData_Base {
-        [Header("Priority")]
-        [Range(0, 255)] public int priority;
+    public class EffectData_Base
+    {
+        [Header("Priority")] [Range(0, 255)] public int priority;
 
         [Header("Unique?")]
-        public bool isFullUnique;//Совсем уникальные, не может висеть двух эффектов этого класса не при каких обстоятельствах
-        public bool isUniqueBySource;// Может висеть несколько однотипных эффектов, но только 1 от этого источника
-        public bool isUniqueByGUID = true;// Может висеть несколько однотипных эффектов, но именно этот только 1
+        //РЎРѕРІСЃРµРј СѓРЅРёРєР°Р»СЊРЅС‹Рµ, РЅРµ РјРѕР¶РµС‚ РІРёСЃРµС‚СЊ РґРІСѓС… СЌС„С„РµРєС‚РѕРІ СЌС‚РѕРіРѕ РєР»Р°СЃСЃР° РЅРµ РїСЂРё РєР°РєРёС… РѕР±СЃС‚РѕСЏС‚РµР»СЊСЃС‚РІР°С…
+        public bool isFullUnique;
+
+        // РњРѕР¶РµС‚ РІРёСЃРµС‚СЊ РЅРµСЃРєРѕР»СЊРєРѕ РѕРґРЅРѕС‚РёРїРЅС‹С… СЌС„С„РµРєС‚РѕРІ, РЅРѕ С‚РѕР»СЊРєРѕ 1 РѕС‚ СЌС‚РѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°
+        public bool isUniqueBySource;
+
+        // РњРѕР¶РµС‚ РІРёСЃРµС‚СЊ РЅРµСЃРєРѕР»СЊРєРѕ РѕРґРЅРѕС‚РёРїРЅС‹С… СЌС„С„РµРєС‚РѕРІ, РЅРѕ РёРјРµРЅРЅРѕ СЌС‚РѕС‚ С‚РѕР»СЊРєРѕ 1
+        public bool isUniqueByGUID = true;
         public string guid = "";
 
-        [Header("Time Settings")]
-        public bool isInfiniteDuration = true;
+        [Header("Time Settings")] public bool isInfiniteDuration = true;
         public float baseDuration;
 
-        [Header("Other")]
-        public bool isNeedUpdate;
+        [Header("Other")] public bool isNeedUpdate;
 
 
-        [Header("Changable:")]
-        public float currentDuration;
+        [Header("Changable:")] public float currentDuration;
         public IEffectSource source;
 
-        public EffectData_Base() {
-            if(guid.IsNullOrEmpty()) {
+        public EffectData_Base()
+        {
+            if (guid.IsNullOrEmpty())
+            {
                 guid = Extensions.GetRandomGUID();
             }
         }
 
-        public virtual void Init() {
-            if(!isInfiniteDuration) {
+        public virtual void Init()
+        {
+            if (!isInfiniteDuration)
+            {
                 currentDuration = baseDuration;
             }
         }
 
-        public virtual void CopyDataTo(EffectOnReciever newEffect) {
-            newEffect.data = MemberwiseClone() as EffectData_Base;
-            //newData.source = source;
-            //newData.priority = priority;
-            //newData.isUnique = isUnique;
-            //newData.isUniqueByThis = isUniqueByThis;
+        public virtual void CopyDataTo(EffectOnReceiver newEffect)
+        {
+            newEffect.SetData(MemberwiseClone());
         }
 
-        public virtual string GetDebugLog() {
+        public virtual string GetDebugLog()
+        {
             string log = "";
             log += $"source = {source} \n";
             log += $"priority = {priority} \n";
@@ -60,5 +63,7 @@ namespace VladB.EffectsSystem {
     }
 
 
-    public interface IEffectSource { }
+    public interface IEffectSource
+    {
+    }
 }
