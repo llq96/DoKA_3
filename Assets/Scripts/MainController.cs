@@ -11,6 +11,7 @@ namespace VladB.Doka
         public TouchRaycaster TouchRaycaster;
         public UIController UIController;
         public GameCamera GameCamera;
+        public WarFogController WarFogController;
 
         private void Awake()
         {
@@ -27,6 +28,7 @@ namespace VladB.Doka
             UnitsManager.Init();
             InputManager_PC.Init();
             TouchRaycaster.Init();
+            WarFogController.Init();
 
             GameCamera.Init();
 
