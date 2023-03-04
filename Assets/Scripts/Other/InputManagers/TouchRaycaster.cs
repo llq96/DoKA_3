@@ -25,7 +25,7 @@ namespace VladB.Doka
                 var mousePos = Input.mousePosition;
                 var ray = _raycastCamera.ScreenPointToRay(mousePos);
                 // Test(ray);
-                var hits = Physics.RaycastAll(ray, 1000f, _raycastMask);
+                var hits = Physics.RaycastAll(ray, float.MaxValue, _raycastMask);
 
                 foreach (var hit in hits)
                 {

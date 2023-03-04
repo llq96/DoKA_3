@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace VladB.Doka
+namespace VladB.Doka.WarFog
 {
     public partial class WarFogController
     {
@@ -17,6 +17,16 @@ namespace VladB.Doka
             pos2D.x = Mathf.Clamp(pos2D.x, 0, MapSizeX - 1);
             pos2D.y = Mathf.Clamp(pos2D.y, 0, MapSizeY - 1);
             return pos2D;
+        }
+
+        private bool IsInMap(Vector2Int pos2D)
+        {
+            return pos2D.x >= 0 && pos2D.y >= 0 && pos2D.x < MapSizeX && pos2D.y < MapSizeY;
+        }
+
+        private bool IsInMap(int finalPosX, int finalPosY)
+        {
+            return finalPosX >= 0 && finalPosY >= 0 && finalPosX < MapSizeX && finalPosY < MapSizeY;
         }
 
         private static float FindDistanceToSegment( //Поискать аналоги

@@ -1,39 +1,94 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace VladB.Doka
+namespace VladB.Doka.WarFog
 {
     public partial class WarFogController
     {
-        private void CalculateLight()
-        {
-            var playerPos3D = MainController.Instance.UnitsManager.Player.transform.position;
-            Vector2Int startPos = ConvertFrom3DTo2D(playerPos3D);
-            _info[startPos.x, startPos.y] = 2;
-            var lightDistance = 30; //TODO
+        [Header("PreparedAngles")]
+        [SerializeField]
+        private List<PreparedAngle> _preparedAngles = new();
 
-            //TODO Подумать над алгоритмом
-            for (int a = 0; a < 360; a += _perAngle)
+        [Serializable]
+        public class PreparedAngle
+        {
+            public float Angle;
+            public List<PointData> Points;
+
+            [Serializable]
+            public class PointData
             {
-                var rad = a * Mathf.Deg2Rad;
-                CalculateLightForRay(startPos, startPos
-                                               + Vector2Int.right * Mathf.RoundToInt(Mathf.Cos(rad) * lightDistance)
-                                               + Vector2Int.up * Mathf.RoundToInt(Mathf.Sin(rad) * lightDistance)
-                );
+                public int PosX;
+                public int PosY;
+                public float Distance;
             }
         }
 
-        private void CalculateLightForRay(Vector2Int start, Vector2Int end)
+        private void CalculateLight()
         {
-            start = Clamp(start);
-            end = Clamp(end);
+            foreach (var lightPoint in _lights)
+            {
+                Vector2Int startPos = ConvertFrom3DTo2D(lightPoint.transform.position);
+                int startPosX = startPos.x;
+                int startPosY = startPos.y;
+                var lightDistance = lightPoint.Radius * SizesMultiplier.x;
+
+                foreach (var preparedAngle in _preparedAngles)
+                {
+                    foreach (var pointData in preparedAngle.Points)
+                    {
+                        if (pointData.Distance > lightDistance) break;
+                        int finalPosX = startPosX + pointData.PosX;
+                        int finalPosY = startPosY + pointData.PosY;
+
+                        if (!IsInMap(finalPosX, finalPosY)) break;
+                        if (_info[finalPosX, finalPosY] == MapState.Blocker) break;
+                        _info[finalPosX, finalPosY] = MapState.Light;
+                    }
+                }
+            }
+        }
+
+        #region PreparedAngle
+
+        [ContextMenu(nameof(GeneratePreparedAngles))]
+        private void GeneratePreparedAngles()
+        {
+            _preparedAngles.Clear();
+
+            Vector2Int startPos = new Vector2Int(0, 0);
+            var lightDistance = 1000;
+
+            for (int a = 0; a < 360; a += _perAngle)
+            {
+                var rad = a * Mathf.Deg2Rad;
+                var list = CalculateLightForPreparedRay(startPos, startPos
+                                                                  + Vector2Int.right *
+                                                                  Mathf.RoundToInt(Mathf.Cos(rad) * lightDistance)
+                                                                  + Vector2Int.up *
+                                                                  Mathf.RoundToInt(Mathf.Sin(rad) * lightDistance)
+                );
+
+                var preparedAngle = new PreparedAngle
+                {
+                    Angle = a,
+                    Points = list
+                };
+                _preparedAngles.Add(preparedAngle);
+            }
+        }
+
+
+        private List<PreparedAngle.PointData> CalculateLightForPreparedRay(Vector2Int start, Vector2Int end)
+        {
             int minX = Mathf.Min(start.x, end.x);
             int minY = Mathf.Min(start.y, end.y);
             int maxX = Mathf.Max(start.x, end.x);
             int maxY = Mathf.Max(start.y, end.y);
             var sqrt2 = Mathf.Sqrt(2);
-            List<Vector2Int> pointsOnRay = new();
+            List<PreparedAngle.PointData> pointsOnRay = new();
 
             for (int x = minX; x <= maxX; x++)
             {
@@ -48,17 +103,20 @@ namespace VladB.Doka
 
                     if (distance <= sqrt2)
                     {
-                        pointsOnRay.Add(new Vector2Int(x, y));
+                        var pointData = new PreparedAngle.PointData
+                        {
+                            PosX = x,
+                            PosY = y,
+                            Distance = new Vector2Int(x, y).magnitude
+                        };
+                        pointsOnRay.Add(pointData);
                     }
                 }
             }
 
-            var iEnumerable = pointsOnRay.OrderBy(pos2D => (pos2D - start).sqrMagnitude);
-            foreach (var pos2D in iEnumerable)
-            {
-                if (_info[pos2D.x, pos2D.y] == 1) break;
-                _info[pos2D.x, pos2D.y] = 3;
-            }
+            return pointsOnRay.OrderBy(pointData => pointData.Distance).ToList();
         }
+
+        #endregion
     }
 }

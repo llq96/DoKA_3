@@ -1,4 +1,5 @@
 using UnityEngine;
+using VladB.Doka.WarFog;
 
 namespace VladB.Doka
 {
