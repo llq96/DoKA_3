@@ -16,11 +16,15 @@ namespace VladB.Doka
         [SerializeField] private UnitUI _ui;
         public UnitUI UI => _ui;
 
+        [SerializeField] private UnitVisibility _visibility;
+        public UnitVisibility Visibility => _visibility;
+
         public virtual void Init()
         {
             EffectsReceiver.Init(this);
             Stats.Init(this);
             UI.Init(this);
+            Visibility.Init(this);
         }
     }
 }

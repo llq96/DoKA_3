@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace VladB.Doka
         [SerializeField] private Transform _unitsParent;
 
         private List<Unit> _units;
+        public ReadOnlyCollection<Unit> Units => _units.AsReadOnly();
 
         public Player Player { get; private set; }
 

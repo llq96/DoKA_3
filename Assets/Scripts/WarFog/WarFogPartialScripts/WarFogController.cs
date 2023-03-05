@@ -84,6 +84,7 @@ namespace VladB.Doka.WarFog
 
             AddBlockers();
             CalculateLight();
+            UpdateUnitsVisibility();
 
 #if UNITY_EDITOR
             if (_isNeedUpdateDebugTexture)
@@ -91,6 +92,24 @@ namespace VladB.Doka.WarFog
                 UpdateDebugTexture();
             }
 #endif
+        }
+
+        private void UpdateUnitsVisibility()
+        {
+            foreach (var unit in MainController.Instance.UnitsManager.Units)
+            {
+                if (unit is Player) continue; //TODO
+                Vector2Int startPos = ConvertFrom3DTo2D(unit.transform.position);
+                if (IsInMap(startPos))
+                {
+                    var isVisible = _info[startPos.x, startPos.y] == MapState.Light;
+                    unit.Visibility.SetVisibility(isVisible);
+                }
+                else
+                {
+                    unit.Visibility.SetVisibility(false);
+                }
+            }
         }
 
         private void AddBlockers()
