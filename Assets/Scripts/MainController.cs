@@ -1,5 +1,5 @@
 using UnityEngine;
-using VladB.Doka.WarFog;
+using VladB.Doka.FogOfWar;
 
 namespace VladB.Doka
 {
@@ -12,7 +12,7 @@ namespace VladB.Doka
         public TouchRaycaster TouchRaycaster;
         public UIController UIController;
         public GameCamera GameCamera;
-        public WarFogController WarFogController;
+        public FOW_Controller FOWController;
 
         private void Awake()
         {
@@ -29,7 +29,7 @@ namespace VladB.Doka
             UnitsManager.Init();
             InputManager_PC.Init();
             TouchRaycaster.Init();
-            WarFogController.Init();
+            FOWController.Init();
 
             GameCamera.Init();
 
