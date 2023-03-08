@@ -19,7 +19,8 @@ namespace VladB.Doka.FogOfWar
 
         [SerializeField] [Range(1, 10)] private int _perAngle = 5;
 
-        [Header("Mask")] [SerializeField] private Material _fogMaskMaterial;
+        [Header("Mask")] [SerializeField] private MeshRenderer _floorRenderer;
+        [SerializeField] private Material _fogMaskMaterial;
         [SerializeField] private Color[] _maskColors;
         [SerializeField] private GameObject _debugPlane;
         private Texture2D _fogMaskTexture;
@@ -32,8 +33,6 @@ namespace VladB.Doka.FogOfWar
         private List<FOW_BlockerPoint> _blockerPoints;
         private List<FOW_LightPoint> _lights;
         private List<FOW_VisibilityChangingObject> _visibilityChangingObjects;
-
-        [SerializeField] private Projector _projector;
 
         private class BlockerInfo
         {
@@ -64,7 +63,10 @@ namespace VladB.Doka.FogOfWar
             {
                 // filterMode = FilterMode.Point
             };
-            _fogMaskMaterial.mainTexture = _fogMaskTexture;
+            // _fogMaskMaterial.mainTexture = _fogMaskTexture;
+            _fogMaskMaterial.SetTexture("_DissolveMap", _fogMaskTexture);
+            _floorRenderer.materials = new[] { _floorRenderer.material, _fogMaskMaterial };
+
             Vector3 _debugPlanePos = _debugPlane.transform.position;
             _debugPlanePos.x = MapRealSizeX / 2f - 1 / SizesMultiplier.x * 0.5f;
             _debugPlanePos.z = MapRealSizeY / 2f - 1 / SizesMultiplier.y * 0.5f;
@@ -78,8 +80,6 @@ namespace VladB.Doka.FogOfWar
 
             _visibilityChangingObjects = FindObjectsOfType<FOW_VisibilityChangingObject>(true).ToList();
             _visibilityChangingObjects.ForEach(x => x.Init());
-
-            _projector.gameObject.SetActive(true);
 
             StartCoroutine(UpdateCor());
         }
