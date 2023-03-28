@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Linq;
 using VladB.Utility;
 
-namespace VladB.Doka
+namespace VladB.Utility
 {
     public class UIController : MonoBehaviour
     {
@@ -14,6 +14,7 @@ namespace VladB.Doka
         public virtual void Init()
         {
             WindowsList = GetComponentsInChildren<IUIWindow>(true).ToList();
+            WindowsList.Act(w => w.Init());
             WindowsList.Act(w => w.Close());
         }
 
@@ -64,5 +65,6 @@ namespace VladB.Doka
         bool IsOpened { get; set; }
         void Open();
         void Close();
+        void Init();
     }
 }

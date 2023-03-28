@@ -1,4 +1,5 @@
 using UnityEngine;
+using VladB.Utility;
 
 namespace VladB.Doka
 {
@@ -24,6 +25,10 @@ namespace VladB.Doka
             }
 
             IsOpened = false;
+        }
+
+        public virtual void Init()
+        {
         }
     }
 }

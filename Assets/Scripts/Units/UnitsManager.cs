@@ -7,18 +7,23 @@ namespace VladB.Doka
 {
     public class UnitsManager : MonoBehaviour
     {
+        [SerializeField] private UnitsSelector _unitsSelector;
+        public UnitsSelector UnitsSelector => _unitsSelector;
+
         [SerializeField] private Transform _unitsParent;
 
-        private List<Unit> _units;
-        public ReadOnlyCollection<Unit> Units => _units.AsReadOnly();
+        private List<Unit> _allUnits;
+        public ReadOnlyCollection<Unit> AllUnits => _allUnits.AsReadOnly();
 
         public Player Player { get; private set; }
 
         public void Init()
         {
-            _units = _unitsParent.GetComponentsInChildren<Unit>(true).ToList();
-            _units.ForEach(x => x.Init());
-            Player = _units.First(x => x is Player) as Player;
+            _allUnits = _unitsParent.GetComponentsInChildren<Unit>(true).ToList();
+            _allUnits.ForEach(x => x.Init());
+            Player = _allUnits.First(x => x is Player) as Player;
+
+            UnitsSelector.Init();
         }
     }
 }

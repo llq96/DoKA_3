@@ -7,9 +7,13 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5985933779387371891, guid: 056ef65d4c61aa447a67e7cff8201e66, type: 3}
+      propertyPath: _effectData_baseMaxHp.changeValue
+      value: 400
+      objectReference: {fileID: 0}
     - target: {fileID: 5985933780478080233, guid: 056ef65d4c61aa447a67e7cff8201e66, type: 3}
       propertyPath: m_Name
-      value: Bot
+      value: Bot Variant
       objectReference: {fileID: 0}
     - target: {fileID: 5985933780478080238, guid: 056ef65d4c61aa447a67e7cff8201e66, type: 3}
       propertyPath: m_RootOrder

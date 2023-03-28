@@ -43,6 +43,7 @@ namespace VladB.Doka.FogOfWar
 
         private MapState[,] _info;
         private List<BlockerInfo>[,] _blockersAtMap;
+        private static readonly int DissolveMap = Shader.PropertyToID("_DissolveMap");
 
         public enum MapState
         {
@@ -61,7 +62,7 @@ namespace VladB.Doka.FogOfWar
 
             _fogMaskTexture = new Texture2D(MapSizeX, MapSizeY, TextureFormat.RGBA32, false);
             // _fogMaskMaterial.mainTexture = _fogMaskTexture;
-            _fogMaskMaterial.SetTexture("_DissolveMap", _fogMaskTexture);
+            _fogMaskMaterial.SetTexture(DissolveMap, _fogMaskTexture);
             _floorRenderer.materials = new[] { _floorRenderer.material, _fogMaskMaterial };
 
             Vector3 _debugPlanePos = _debugPlane.transform.position;
@@ -127,7 +128,7 @@ namespace VladB.Doka.FogOfWar
 
         private void UpdateUnitsVisibility()
         {
-            foreach (var unit in MainController.Instance.UnitsManager.Units)
+            foreach (var unit in MainController.Instance.UnitsManager.AllUnits)
             {
                 if (unit is Player) continue; //TODO
                 Vector2Int startPos = ConvertFrom3DTo2D(unit.transform.position);

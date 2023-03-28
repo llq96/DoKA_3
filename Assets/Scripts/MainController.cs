@@ -5,14 +5,25 @@ namespace VladB.Doka
 {
     public class MainController : MonoBehaviour
     {
-        public static MainController Instance;
+        public static MainController Instance { get; private set; }
 
-        public UnitsManager UnitsManager;
-        public InputManager_PC InputManager_PC;
-        public TouchRaycaster TouchRaycaster;
-        public UIController UIController;
-        public GameCamera GameCamera;
-        public FOW_Controller FOWController;
+        [SerializeField] private UnitsManager _unitsManager;
+        public UnitsManager UnitsManager => _unitsManager;
+
+        [SerializeField] private InputManager_PC _inputManager_pc;
+        public InputManager_PC InputManager_PC => _inputManager_pc;
+
+        [SerializeField] private TouchRaycaster _touchRaycaster;
+        public TouchRaycaster TouchRaycaster => _touchRaycaster;
+
+        [SerializeField] private UIController _uiController;
+        public UIController UIController => _uiController;
+
+        [SerializeField] private GameCamera _gameCamera;
+        public GameCamera GameCamera => _gameCamera;
+
+        [SerializeField] private FOW_Controller _fowController;
+        public FOW_Controller FOWController => _fowController;
 
         private void Awake()
         {
@@ -22,6 +33,7 @@ namespace VladB.Doka
         private void Start()
         {
             Init();
+            StartGame();
         }
 
         private void Init()
@@ -31,9 +43,15 @@ namespace VladB.Doka
             TouchRaycaster.Init();
             FOWController.Init();
 
+
             GameCamera.Init();
 
             UIController.Init();
+        }
+
+        private void StartGame()
+        {
+            UnitsManager.UnitsSelector.SelectUnit(UnitsManager.Player);
         }
     }
 }

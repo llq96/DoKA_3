@@ -7,6 +7,9 @@ namespace VladB.Doka
         private Unit _unit;
         private bool _isVisible;
 
+        private static int Layer_Units => LayerMask.NameToLayer("Units");
+        private static int Layer_UnVisible => LayerMask.NameToLayer("UnVisible");
+
         public void Init(Unit unit)
         {
             _unit = unit;
@@ -18,8 +21,8 @@ namespace VladB.Doka
             //TODO 
             if (isVisible == _isVisible) return;
             _isVisible = isVisible;
-            
-            var layer = isVisible ? LayerMask.NameToLayer("Units") : LayerMask.NameToLayer("UnVisible"); //TODO 
+
+            var layer = isVisible ? Layer_Units : Layer_UnVisible;
             SetLayerRecursively(_unit.gameObject, layer);
         }
 
