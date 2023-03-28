@@ -59,10 +59,7 @@ namespace VladB.Doka.FogOfWar
 
             _info = new MapState[MapSizeX, MapSizeY];
 
-            _fogMaskTexture = new Texture2D(MapSizeX, MapSizeY, TextureFormat.RGBA32, false)
-            {
-                // filterMode = FilterMode.Point
-            };
+            _fogMaskTexture = new Texture2D(MapSizeX, MapSizeY, TextureFormat.RGBA32, false);
             // _fogMaskMaterial.mainTexture = _fogMaskTexture;
             _fogMaskMaterial.SetTexture("_DissolveMap", _fogMaskTexture);
             _floorRenderer.materials = new[] { _floorRenderer.material, _fogMaskMaterial };
