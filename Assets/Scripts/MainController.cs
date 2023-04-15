@@ -25,6 +25,9 @@ namespace VladB.Doka
         [SerializeField] private FOW_Controller _fowController;
         public FOW_Controller FOWController => _fowController;
 
+        [SerializeField] private ParticlesManager _particlesManager;
+        public ParticlesManager ParticlesManager => _particlesManager;
+
         private void Awake()
         {
             Instance = this;
@@ -42,7 +45,7 @@ namespace VladB.Doka
             InputManager_PC.Init();
             TouchRaycaster.Init();
             FOWController.Init();
-
+            ParticlesManager.Init();
 
             GameCamera.Init();
 

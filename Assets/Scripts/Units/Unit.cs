@@ -2,22 +2,17 @@ using UnityEngine;
 
 namespace VladB.Doka
 {
+    [RequireComponent(typeof(UnitComponents))]
     public class Unit : MonoBehaviour
     {
-        [SerializeField] private UnitMover _mover;
-        public UnitMover Mover => _mover;
+        [SerializeField] private UnitComponents _components;
 
-        [SerializeField] private UnitEffectsReceiver _effectsReceiver;
-        public UnitEffectsReceiver EffectsReceiver => _effectsReceiver;
-
-        [SerializeField] private UnitStats _stats;
-        public UnitStats Stats => _stats;
-
-        [SerializeField] private UnitUI _ui;
-        public UnitUI UI => _ui;
-
-        [SerializeField] private UnitVisibility _visibility;
-        public UnitVisibility Visibility => _visibility;
+        public UnitMover Mover => _components.Mover;
+        public UnitEffectsReceiver EffectsReceiver => _components.EffectsReceiver;
+        public UnitStats Stats => _components.Stats;
+        public UnitUI UI => _components.UI;
+        public UnitVisibility Visibility => _components.Visibility;
+        public UnitModel Model => _components.Model;
 
         public virtual void Init()
         {
@@ -25,6 +20,8 @@ namespace VladB.Doka
             Stats.Init(this);
             UI.Init(this);
             Visibility.Init(this);
+            Model.Init(this);
+            Mover.Init(this);
         }
     }
 }

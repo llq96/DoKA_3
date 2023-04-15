@@ -53,7 +53,7 @@ namespace VladB.Doka
         {
             float moveSpeed = GetEffectsWithType<UnitEffect_MoveSpeed>().OfType<Effect_ChangeValue_Float>()
                 .ToList().Calc();
-            _unit.Mover.Speed = moveSpeed;
+            _unit.Mover.MaxSpeed = moveSpeed;
         }
 
         public void Recalculate_MaxHp()

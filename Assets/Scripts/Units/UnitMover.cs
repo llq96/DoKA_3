@@ -5,17 +5,44 @@ namespace VladB.Doka
 {
     public class UnitMover : MonoBehaviour
     {
-        [SerializeField] private NavMeshAgent _agent;
+        private Unit _unit;
 
-        public float Speed
+        [SerializeField] private NavMeshAgent _agent;
+        private Vector3 _lastDestination;
+        private float _lastSpeed;
+
+
+        public float MaxSpeed
         {
             get => _agent.speed;
             set => _agent.speed = value;
         }
 
+        public float CurrentSpeed => _agent.velocity.magnitude;
+
+        public void Init(Unit unit)
+        {
+            _unit = unit;
+        }
+
+        private void Update()
+        {
+            _lastSpeed = CurrentSpeed;
+            _unit.Model.Set_MoveSpeed(_lastSpeed);
+        }
+
         public void MoveTo(Vector3 destination)
         {
-            _agent.destination = destination;
+            if (_agent.isOnNavMesh)
+            {
+                if (_agent.isStopped)
+                {
+                    _agent.isStopped = false;
+                }
+
+                _lastDestination = destination;
+                _agent.SetDestination(destination);
+            }
         }
     }
 }

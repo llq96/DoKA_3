@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +18,11 @@ namespace VladB.Doka.FogOfWar
         [SerializeField]
         private float _updateDelay = 0.1f;
 
+        [SerializeField] private float _updateColorsSpeed = 5f;
         [SerializeField] [Range(1, 10)] private int _perAngle = 5;
 
         [Header("Mask")] [SerializeField] private MeshRenderer _floorRenderer;
         [SerializeField] private Material _fogMaskMaterial;
-        [SerializeField] private Color[] _maskColors;
         [SerializeField] private GameObject _debugPlane;
         private Texture2D _fogMaskTexture;
 
@@ -42,6 +43,7 @@ namespace VladB.Doka.FogOfWar
         }
 
         private MapState[,] _info;
+        private float[,] _visibleProgress;
         private List<BlockerInfo>[,] _blockersAtMap;
         private static readonly int DissolveMap = Shader.PropertyToID("_DissolveMap");
 
@@ -59,16 +61,17 @@ namespace VladB.Doka.FogOfWar
             SizesMultiplier = new Vector2(MapSizeX / (float)MapRealSize.x, MapSizeY / (float)MapRealSize.y);
 
             _info = new MapState[MapSizeX, MapSizeY];
+            _visibleProgress = new float[MapSizeX, MapSizeY];
 
             _fogMaskTexture = new Texture2D(MapSizeX, MapSizeY, TextureFormat.RGBA32, false);
             // _fogMaskMaterial.mainTexture = _fogMaskTexture;
             _fogMaskMaterial.SetTexture(DissolveMap, _fogMaskTexture);
             _floorRenderer.materials = new[] { _floorRenderer.material, _fogMaskMaterial };
 
-            Vector3 _debugPlanePos = _debugPlane.transform.position;
-            _debugPlanePos.x = MapRealSizeX / 2f - 1 / SizesMultiplier.x * 0.5f;
-            _debugPlanePos.z = MapRealSizeY / 2f - 1 / SizesMultiplier.y * 0.5f;
-            _debugPlane.transform.position = _debugPlanePos;
+            Vector3 debugPlanePos = _debugPlane.transform.position;
+            debugPlanePos.x = MapRealSizeX / 2f - 1 / SizesMultiplier.x * 0.5f;
+            debugPlanePos.z = MapRealSizeY / 2f - 1 / SizesMultiplier.y * 0.5f;
+            _debugPlane.transform.position = debugPlanePos;
 
             _blockerPoints = FindObjectsOfType<FOW_BlockerPoint>(true).ToList();
             _blockerPoints.ForEach(x => x.Init());
@@ -91,6 +94,11 @@ namespace VladB.Doka.FogOfWar
             }
         }
 
+        private void Update()
+        {
+            UpdateMaskTexture();
+        }
+
         private void ForceUpdateFog()
         {
             _info = new MapState[MapSizeX, MapSizeY];
@@ -100,8 +108,6 @@ namespace VladB.Doka.FogOfWar
             CalculateLight();
             UpdateUnitsVisibility();
             UpdateVisibility();
-
-            UpdateMaskTexture();
         }
 
         private void UpdateVisibility() //TODO
@@ -198,8 +204,26 @@ namespace VladB.Doka.FogOfWar
             {
                 for (int y = 0; y < MapSizeY; y++)
                 {
-                    var value = _info[x, y];
-                    colors[y * MapSizeX + x] = _maskColors[(int)value];
+                    var progress = _visibleProgress[x, y];
+
+                    switch (_info[x, y])
+                    {
+                        case MapState.Nothing:
+                            progress += Time.deltaTime * _updateColorsSpeed;
+                            break;
+                        case MapState.Blocker:
+                            progress += Time.deltaTime * _updateColorsSpeed;
+                            break;
+                        case MapState.Light:
+                            progress -= Time.deltaTime * _updateColorsSpeed;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    progress = Mathf.Clamp01(progress);
+                    colors[y * MapSizeX + x] = new Color(progress, progress, progress, progress);
+                    _visibleProgress[x, y] = progress;
                 }
             }
 
