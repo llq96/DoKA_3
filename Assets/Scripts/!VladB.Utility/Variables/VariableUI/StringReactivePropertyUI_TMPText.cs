@@ -1,9 +1,8 @@
-using System;
 using TMPro;
 
 namespace VladB.Utility
 {
-    public class VariableUI_String : VariableUI<String>
+    public class StringReactivePropertyUI_TMPText : StringReactivePropertyUI
     {
         private TextMeshProUGUI _tmp;
 
