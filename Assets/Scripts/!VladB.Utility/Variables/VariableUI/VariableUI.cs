@@ -1,3 +1,4 @@
+using UniRx;
 using UnityEngine;
 
 
@@ -5,94 +6,53 @@ namespace VladB.Utility
 {
     public abstract class VariableUI<T> : MonoBehaviour
     {
-        public string prefix;
-        public string postfix;
+        [SerializeField] protected string Prefix;
+        [SerializeField] protected string Postfix;
 
-        protected Variable<T> variable;
-        protected T variableValue;
+        protected IReadOnlyReactiveProperty<T> ReactiveProperty;
 
-        #region SetVariable
+        private CompositeDisposable _disposables = new();
 
-        public virtual void SetVariable(Variable<T> variable)
+        public virtual void SetReactiveProperty(IReadOnlyReactiveProperty<T> reactiveProperty)
         {
-            if (this.variable != null)
-            {
-                this.variable.OnValueChanged_Ev3 -= UpdateVariableValue;
-            }
-
-            this.variable = variable;
-
-            if (this.variable != null)
-            {
-                this.variable.OnValueChanged_Ev3 -= UpdateVariableValue;
-                this.variable.OnValueChanged_Ev3 += UpdateVariableValue;
-            }
-
-            UpdateVariableValue();
+            _disposables.Dispose();
+            ReactiveProperty = reactiveProperty;
+            ReactiveProperty.Subscribe(_ => UpdateVariableUI()).AddTo(_disposables);
+            UpdateVariableUI();
         }
-
-        #endregion
-
-        #region UpdateVariableValue
-
-        protected virtual void UpdateVariableValue(T newValue, T oldValue, T deltaValue)
-        {
-            variableValue = newValue;
-        }
-
-        public virtual void UpdateVariableValue()
-        {
-            if (variable != null)
-            {
-                UpdateVariableValue(variable.Value, default, default);
-            }
-        }
-
-        #endregion
-
-        #region UpdateVariableValue UI
 
         public abstract void UpdateVariableUI();
-
-        #endregion
 
         #region OnEnable/OnDisable/Update Functions
 
         private void OnEnable()
         {
-            OnEnableFunc();
+            OnEnableMethod();
         }
 
-        protected virtual void OnEnableFunc()
+        protected virtual void OnEnableMethod()
         {
-            if (variable != null)
-            {
-                variable.OnValueChanged_Ev3 += UpdateVariableValue;
-            }
-
-            UpdateVariableValue();
+            ReactiveProperty.Subscribe(_ => UpdateVariableUI()).AddTo(_disposables);
+            UpdateVariableUI();
         }
 
 
         private void OnDisable()
         {
-            OnDisableFunc();
+            OnDisableMethod();
         }
 
-        protected virtual void OnDisableFunc()
+        protected virtual void OnDisableMethod()
         {
-            if (variable != null)
-            {
-                variable.OnValueChanged_Ev3 -= UpdateVariableValue;
-            }
+            _disposables.Dispose();
         }
 
         private void Update()
         {
-            UpdateFunc();
+            UpdateMethod();
         }
 
-        protected virtual void UpdateFunc()
+        protected virtual void UpdateMethod()
         {
         }
 

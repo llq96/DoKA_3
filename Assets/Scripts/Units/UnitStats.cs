@@ -1,6 +1,5 @@
-using System;
+using UniRx;
 using UnityEngine;
-using VladB.Utility;
 
 namespace VladB.Doka
 {
@@ -9,22 +8,21 @@ namespace VladB.Doka
         private Unit _unit;
 
         //TODO Вынести в отдельный класс всё про hp
-        [SerializeField] private VariableFloatClamped _hp;
-        public float Hp_Current => _hp.Value;
-        public float Hp_Max => _hp.maxValue;
-        public float Hp_Clamped01 => _hp.Value / _hp.maxValue;
+        [SerializeField] private ReactiveProperty<float> _hp;
+        [SerializeField] private ReactiveProperty<float> _maxHp;
 
-        public Action OnValueChanged_Hp;
+        public IReadOnlyReactiveProperty<float> Hp => _hp;
+        public IReadOnlyReactiveProperty<float> MaxHp => _maxHp;
+
+        public float Hp_Current => _hp.Value;
+        public float Hp_Max => _maxHp.Value;
+        public float Hp_Clamped01 => _hp.Value / _maxHp.Value;
 
         public void Init(Unit unit)
         {
             _unit = unit;
-
-            _hp.OnValueChanged += CheckHp;
-
-            _hp.OnValueChanged += () => OnValueChanged_Hp?.Invoke();
-
-            _hp.Value = _hp.maxValue;
+            _hp.Subscribe((_) => CheckHp());
+            _hp.Value = _maxHp.Value;
         }
 
         public void CheckHp()
@@ -42,7 +40,7 @@ namespace VladB.Doka
         public void SetMaxHp(float maxHp)
         {
             var clamped = Hp_Clamped01;
-            _hp.maxValue = maxHp;
+            _maxHp.Value = maxHp;
             _hp.Value = clamped * maxHp;
         }
 

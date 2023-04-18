@@ -16,25 +16,11 @@ namespace VladB.Utility
             }
         }
 
-        protected override void OnEnableFunc()
-        {
-            base.OnEnableFunc();
-            UpdateVariableUI();
-        }
-
-        protected override void UpdateVariableValue(string newValue, string oldValue, string deltaValue)
-        {
-            base.UpdateVariableValue(newValue, oldValue, deltaValue);
-
-            UpdateVariableUI();
-            // Debug.Log($"{variableValue}");
-        }
-
         public override void UpdateVariableUI()
         {
-            if (TMP)
+            if (TMP && ReactiveProperty != null)
             {
-                TMP.text = $"{prefix}{variableValue}{postfix}";
+                TMP.text = $"{Prefix}{ReactiveProperty.Value}{Postfix}";
             }
         }
     }

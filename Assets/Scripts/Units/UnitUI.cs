@@ -1,4 +1,5 @@
 using TMPro;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,18 +13,15 @@ namespace VladB.Doka
         [SerializeField] private Image _hpBar;
         [SerializeField] private TextMeshProUGUI _tmp_hp;
 
+        private CompositeDisposable _disposables = new();
+
         public void Init(Unit unit)
         {
             _unit = unit;
 
-            _unit.Stats.OnValueChanged_Hp += UpdateUI;
+            _unit.Stats.Hp.Subscribe(_ => UpdateUI()).AddTo(_disposables);
 
             UpdateUI();
-        }
-
-        private void OnDestroy()
-        {
-            _unit.Stats.OnValueChanged_Hp -= UpdateUI;
         }
 
         private void Update()
@@ -36,6 +34,11 @@ namespace VladB.Doka
         {
             _hpBar.fillAmount = _unit.Stats.Hp_Clamped01;
             _tmp_hp.text = $"{_unit.Stats.Hp_Current} / {_unit.Stats.Hp_Max}";
+        }
+
+        private void OnDestroy()
+        {
+            _disposables.Dispose();
         }
     }
 }

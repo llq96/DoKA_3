@@ -1,3 +1,4 @@
+using UniRx;
 using UnityEngine;
 
 namespace VladB.Doka.UI
@@ -9,6 +10,8 @@ namespace VladB.Doka.UI
 
         [SerializeField] private UI_Bar _bar_hp;
         [SerializeField] private UI_Bar _bar_mana;
+
+        private CompositeDisposable _disposables = new();
 
         public void Init()
         {
@@ -23,16 +26,12 @@ namespace VladB.Doka.UI
         private void SetUnit(Unit unit)
         {
             //TODO Scipt for Stat
-            if (_unit != null)
-            {
-                _unit.Stats.OnValueChanged_Hp -= UpdateUI;
-            }
+            _disposables.Dispose();
 
             if (unit == null) return;
+
             _unit = unit;
-
-            _unit.Stats.OnValueChanged_Hp += UpdateUI;
-
+            _unit.Stats.Hp.Subscribe((_) => UpdateUI());
             UpdateUI();
         }
 
