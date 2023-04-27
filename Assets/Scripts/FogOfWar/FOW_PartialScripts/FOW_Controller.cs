@@ -1,14 +1,18 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Zenject;
 using Color = UnityEngine.Color;
 
 namespace VladB.Doka.FogOfWar
 {
-    public partial class FOW_Controller : MonoBehaviour
+    public partial class FOW_Controller : MonoBehaviour //TODO Разбить на большее количество скриптов
     {
+        [Inject] private UnitsManager _unitsManager;
+
         [Header("Size")] [SerializeField] private int MapSizeX = 40;
         [SerializeField] private int MapSizeY = 40;
         [SerializeField] private int MapRealSizeX = 20;
@@ -47,6 +51,8 @@ namespace VladB.Doka.FogOfWar
         private List<BlockerInfo>[,] _blockersAtMap;
         private static readonly int DissolveMap = Shader.PropertyToID("_DissolveMap");
 
+        private CancellationTokenSource _updateCancellationSource = new();
+
         public enum MapState
         {
             Nothing,
@@ -82,14 +88,17 @@ namespace VladB.Doka.FogOfWar
             _visibilityChangingObjects = FindObjectsOfType<FOW_VisibilityChangingObject>(true).ToList();
             _visibilityChangingObjects.ForEach(x => x.Init());
 
-            StartCoroutine(UpdateCor());
+            UpdateFogCircle(_updateCancellationSource.Token).Forget();
         }
 
-        private IEnumerator UpdateCor()
+
+        private async UniTaskVoid UpdateFogCircle(CancellationToken cancellationToken)
         {
             while (true)
             {
-                yield return new WaitForSeconds(_updateDelay);
+                await UniTask.Delay((int)_updateDelay * 1000, DelayType.DeltaTime, PlayerLoopTiming.Update,
+                    cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return;
                 ForceUpdateFog();
             }
         }
@@ -134,7 +143,7 @@ namespace VladB.Doka.FogOfWar
 
         private void UpdateUnitsVisibility()
         {
-            foreach (var unit in MainController.Instance.UnitsManager.AllUnits)
+            foreach (var unit in _unitsManager.AllUnits)
             {
                 if (unit is Player) continue; //TODO
                 Vector2Int startPos = ConvertFrom3DTo2D(unit.transform.position);
@@ -229,6 +238,11 @@ namespace VladB.Doka.FogOfWar
 
             _fogMaskTexture.SetPixels(colors);
             _fogMaskTexture.Apply(false);
+        }
+
+        private void OnDestroy()
+        {
+            _updateCancellationSource.Cancel();
         }
     }
 }

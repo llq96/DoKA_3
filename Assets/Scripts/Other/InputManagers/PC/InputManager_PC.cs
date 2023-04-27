@@ -1,18 +1,19 @@
 using UnityEngine;
+using Zenject;
 
 namespace VladB.Doka
 {
     public class InputManager_PC : MonoBehaviour
     {
         private Player _player;
-        private GameCamera _gameCamera;
+        [Inject] private UnitsManager _unitsManager;
+        [Inject] private GameCamera _gameCamera;
+        [Inject] private TouchRaycaster _touchRaycaster;
 
         public void Init()
         {
-            _player = MainController.Instance.UnitsManager.Player;
-            _gameCamera = MainController.Instance.GameCamera;
-
-            MainController.Instance.TouchRaycaster.OnHitInMovementMask += OnHitInMovementMask;
+            _player = _unitsManager.Player;
+            _touchRaycaster.OnHitInMovementMask += OnHitInMovementMask;
         }
 
         private void OnHitInMovementMask(RaycastHit hit)

@@ -1,0 +1,12 @@
+{
+    "name": "Zenject-Editor",
+    "references": [
+        "Zenject",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

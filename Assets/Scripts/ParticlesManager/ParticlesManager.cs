@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEngine;
+using Zenject;
 
 namespace VladB.Doka
 {
@@ -7,10 +8,11 @@ namespace VladB.Doka
     public class ParticlesManager : MonoBehaviour
     {
         [SerializeField] private ParticleSystem _particle_movePoints;
+        [Inject] private TouchRaycaster _touchRaycaster;
 
         public void Init()
         {
-            MainController.Instance.TouchRaycaster.OnHitInMovementMask += hit => { PlayParticle_MovePoint(hit.point); };
+            _touchRaycaster.OnHitInMovementMask += hit => { PlayParticle_MovePoint(hit.point); };
         }
 
         public void PlayParticle_MovePoint(Vector3 position)

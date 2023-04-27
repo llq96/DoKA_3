@@ -1,12 +1,15 @@
 using UniRx;
 using UnityEngine;
+using Zenject;
 
 namespace VladB.Doka.UI
 {
     public class UI_DownPanel : MonoBehaviour
     {
         private Unit _unit;
-        private static UnitsSelector UnitsSelector => MainController.Instance.UnitsManager.UnitsSelector;
+        [Inject] private UnitsManager _unitsManager;
+
+        private UnitsSelector UnitsSelector => _unitsManager.UnitsSelector;
 
         [SerializeField] private UI_Bar _bar_hp;
         [SerializeField] private UI_Bar _bar_mana;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
+using Zenject;
 
 namespace VladB.Doka
 {
@@ -15,9 +16,11 @@ namespace VladB.Doka
 
         public Action OnChangedSelectedUnit;
 
+        [Inject] private TouchRaycaster _touchRaycaster;
+
         public void Init()
         {
-            MainController.Instance.TouchRaycaster.OnHitInUnit += (_, unit) => SelectUnit(unit);
+            _touchRaycaster.OnHitInUnit += (_, unit) => SelectUnit(unit);
         }
 
         public void SelectUnits(IEnumerable<Unit> units)
