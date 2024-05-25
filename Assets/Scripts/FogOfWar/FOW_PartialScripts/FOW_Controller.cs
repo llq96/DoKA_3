@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using Zenject;
 using Color = UnityEngine.Color;
@@ -14,21 +13,24 @@ namespace VladB.Doka.FogOfWar
     {
         [Inject] private UnitsManager _unitsManager;
 
-        [Header("Size")] [SerializeField] private int MapSizeX = 40;
+        [Header("Size")]
+        [SerializeField] private int MapSizeX = 40;
         [SerializeField] private int MapSizeY = 40;
         [SerializeField] private int MapRealSizeX = 20;
         [SerializeField] private int MapRealSizeY = 20;
 
         [Header("Other Settings")]
-        [SerializeField]
-        private float _updateDelay = 0.1f;
+        [SerializeField] private bool _isActiveUpdate;
+        [SerializeField] private float _updateDelay = 0.1f;
 
         [SerializeField] private float _updateColorsSpeed = 5f;
         [SerializeField] [Range(1, 10)] private int _perAngle = 5;
 
-        [Header("Mask")] [SerializeField] private MeshRenderer _floorRenderer;
+        [Header("Mask")]
+        [SerializeField] private MeshRenderer _floorRenderer;
         [SerializeField] private Material _fogMaskMaterial;
         [SerializeField] private GameObject _debugPlane;
+
         private Texture2D _fogMaskTexture;
 
         public Vector2Int MapSize { get; private set; }
@@ -40,39 +42,15 @@ namespace VladB.Doka.FogOfWar
         private List<FOW_LightPoint> _lights;
         private List<FOW_VisibilityChangingObject> _visibilityChangingObjects;
 
-        private class BlockerInfo
-        {
-            public FOW_BlockerPoint BlockerPoint { get; }
-            public Vector3 WorldPosition { get; private set; }
-            public float Radius { get; private set; }
-            // public List<Vector2Int> Points = new();
-            public bool IsVisible;
-
-            public BlockerInfo(FOW_BlockerPoint blockerPoint)
-            {
-                BlockerPoint = blockerPoint;
-            }
-
-            public void UpdateData()
-            {
-                WorldPosition = BlockerPoint.transform.position;
-                Radius = BlockerPoint.Radius;
-            }
-        }
-
-        private MapState[,] _info;
+        private bool[,] _map_isBlocker;
+        private bool[,] _map_isLight;
         private float[,] _visibleProgress;
         // private List<BlockerInfo>[,] _blockersAtMap;
         private static readonly int DissolveMap = Shader.PropertyToID("_DissolveMap");
 
         private readonly CancellationTokenSource _updateCancellationSource = new();
 
-        public enum MapState
-        {
-            Nothing,
-            Blocker,
-            Light
-        }
+        private Color[] colors;
 
         public void Init()
         {
@@ -80,7 +58,8 @@ namespace VladB.Doka.FogOfWar
             MapRealSize = new Vector2Int(MapRealSizeX, MapRealSizeY);
             SizesMultiplier = new Vector2(MapSizeX / (float)MapRealSize.x, MapSizeY / (float)MapRealSize.y);
 
-            _info = new MapState[MapSizeX, MapSizeY];
+            _map_isBlocker = new bool[MapSizeX, MapSizeY];
+            _map_isLight = new bool[MapSizeX, MapSizeY];
             _visibleProgress = new float[MapSizeX, MapSizeY];
 
 
@@ -109,6 +88,7 @@ namespace VladB.Doka.FogOfWar
         }
 
 
+        [UsedImplicitly]
         private async UniTaskVoid UpdateFogCircle(CancellationToken cancellationToken)
         {
             while (true)
@@ -120,7 +100,6 @@ namespace VladB.Doka.FogOfWar
             }
         }
 
-        [SerializeField] private bool _isActiveUpdate;
 
         private void ForceUpdateFog()
         {
@@ -128,7 +107,8 @@ namespace VladB.Doka.FogOfWar
             {
                 for (int y = 0; y < MapSizeY; y++)
                 {
-                    _info[x, y] = MapState.Nothing;
+                    _map_isBlocker[x, y] = false;
+                    _map_isLight[x, y] = false;
                 }
             }
 
@@ -144,54 +124,6 @@ namespace VladB.Doka.FogOfWar
             }
         }
 
-        private void UpdateBlockersVisibility()
-        {
-            foreach (var blocker in _blockers)
-            {
-                var point = blocker.BlockerPoint;
-                if (point == null) continue;
-                if (point.transform == null) continue;
-                if (!point.gameObject.activeInHierarchy) continue;
-
-                Vector2Int center = ConvertFrom3DTo2D(point.transform.position);
-                var pointRadius = point.Radius * SizesMultiplier.x;
-
-                Vector2Int leftTop =
-                    ConvertFrom3DTo2D(point.transform.position + pointRadius * (Vector3.left + Vector3.forward));
-                Vector2Int rightBot =
-                    ConvertFrom3DTo2D(point.transform.position + pointRadius * (Vector3.right + Vector3.back));
-
-                blocker.IsVisible = IsVisible();
-
-                bool IsVisible()
-                {
-                    for (int x = leftTop.x; x <= rightBot.x; x++)
-                    {
-                        for (int y = rightBot.y; y <= leftTop.y; y++)
-                        {
-                            //TODO types
-                            var deltaX = x - center.x;
-                            var deltaY = y - center.y;
-                            var sqrDistance = deltaX * deltaX + deltaY * deltaY;
-                            if (sqrDistance <= pointRadius * pointRadius)
-                            {
-                                if (_info[x, y] == MapState.Light)
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-
-                    return false;
-                }
-            }
-
-            foreach (var blocker in _blockers.Where(x => x.IsVisible))
-            {
-                blocker.BlockerPoint.VisibilityChangingObjects.ForEach(x => x.SetVisibility(true));
-            }
-        }
 
         private void UpdateVisibility() //TODO
         {
@@ -200,7 +132,7 @@ namespace VladB.Doka.FogOfWar
                 Vector2Int startPos = ConvertFrom3DTo2D(obj.transform.position);
                 if (IsInMap(startPos))
                 {
-                    var isVisible = _info[startPos.x, startPos.y] == MapState.Light;
+                    var isVisible = _map_isLight[startPos.x, startPos.y];
                     obj.SetVisibility(isVisible);
                 }
                 else
@@ -218,7 +150,7 @@ namespace VladB.Doka.FogOfWar
                 Vector2Int startPos = ConvertFrom3DTo2D(unit.transform.position);
                 if (IsInMap(startPos))
                 {
-                    var isVisible = _info[startPos.x, startPos.y] == MapState.Light;
+                    var isVisible = _map_isLight[startPos.x, startPos.y];
                     unit.Visibility.SetVisibility(isVisible);
                 }
                 else
@@ -231,14 +163,13 @@ namespace VladB.Doka.FogOfWar
         private void AddBlockers()
         {
             _blockers.ForEach(x => x.UpdateData());
-          
+
             _blockers
-                .Where(blocker => blocker.BlockerPoint != null 
+                .Where(blocker => blocker.BlockerPoint != null
                                   && blocker.BlockerPoint.gameObject.activeInHierarchy)
                 .ToList()
                 .AsParallel()
                 .ForAll(AddBlocker);
-
         }
 
         private void AddBlocker(BlockerInfo blocker)
@@ -263,55 +194,58 @@ namespace VladB.Doka.FogOfWar
                     var sqrDistance = deltaX * deltaX + deltaY * deltaY;
                     if (sqrDistance <= pointRadius * pointRadius)
                     {
-                        _info[x, y] = MapState.Blocker;
+                        _map_isBlocker[x, y] = true;
                     }
-
-                    // _blockersAtMap[x, y] ??= new List<BlockerInfo>();
-                    // _blockersAtMap[x, y].Add(blocker);
                 }
             }
         }
 
-        private Color[] colors;
-            
-        private async void UpdateMaskTexture()
+        private void UpdateBlockersVisibility()
         {
-            await UpdateColors();
-            if(_updateCancellationSource.IsCancellationRequested) return;
-            _fogMaskTexture.SetPixels(colors);
-            _fogMaskTexture.Apply(false);
-        }
-
-        private async Task UpdateColors()
-        {
-            var deltaTime = Time.deltaTime;
-            await Task.Delay(1).ConfigureAwait(false);
-            colors = new Color[MapSizeX * MapSizeY];
-            for (int x = 0; x < MapSizeX; x++)
+            foreach (var blocker in _blockers)
             {
-                for (int y = 0; y < MapSizeY; y++)
-                {
-                    var progress = _visibleProgress[x, y];
+                if (blocker.BlockerPoint == null) continue;
+                if (!blocker.BlockerPoint.gameObject.activeInHierarchy) continue;
 
-                    switch (_info[x, y])
+                Vector2Int center = ConvertFrom3DTo2D(blocker.WorldPosition);
+                var centerX = center.x;
+                var centerY = center.y;
+                var pointRadius = blocker.Radius * SizesMultiplier.x;
+
+                Vector2Int leftTop =
+                    ConvertFrom3DTo2D(blocker.WorldPosition + pointRadius * (Vector3.left + Vector3.forward));
+                Vector2Int rightBot =
+                    ConvertFrom3DTo2D(blocker.WorldPosition + pointRadius * (Vector3.right + Vector3.back));
+
+                blocker.IsVisible = IsVisible();
+
+                bool IsVisible()
+                {
+                    for (int x = leftTop.x; x <= rightBot.x; x++)
                     {
-                        case MapState.Nothing:
-                            progress += deltaTime * _updateColorsSpeed;
-                            break;
-                        case MapState.Blocker:
-                            progress += deltaTime * _updateColorsSpeed;
-                            break;
-                        case MapState.Light:
-                            progress -= deltaTime * _updateColorsSpeed;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        for (int y = rightBot.y; y <= leftTop.y; y++)
+                        {
+                            //TODO types
+                            var deltaX = x - centerX;
+                            var deltaY = y - centerY;
+                            var sqrDistance = deltaX * deltaX + deltaY * deltaY;
+                            if (sqrDistance <= pointRadius * pointRadius)
+                            {
+                                if (_map_isLight[x, y])
+                                {
+                                    return true;
+                                }
+                            }
+                        }
                     }
 
-                    progress = Mathf.Clamp01(progress);
-                    colors[y * MapSizeX + x] = new Color(progress, progress, progress, progress);
-                    _visibleProgress[x, y] = progress;
+                    return false;
                 }
+            }
+
+            foreach (var blocker in _blockers.Where(x => x.IsVisible))
+            {
+                blocker.BlockerPoint.VisibilityChangingObjects.ForEach(x => x.SetVisibility(true));
             }
         }
 
