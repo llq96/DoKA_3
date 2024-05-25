@@ -50,7 +50,7 @@ namespace VladB.Doka.FogOfWar
 
         private readonly CancellationTokenSource _updateCancellationSource = new();
 
-        private Color[] colors;
+        private Color[] _colors;
 
         public void Init()
         {
@@ -77,12 +77,13 @@ namespace VladB.Doka.FogOfWar
             _blockerPoints.ForEach(x => x.Init());
             _blockers = _blockerPoints.Select(x => new BlockerInfo(x)).ToList();
 
-
             _lights = FindObjectsOfType<FOW_LightPoint>(true).ToList();
             _lights.ForEach(x => x.Init());
 
             _visibilityChangingObjects = FindObjectsOfType<FOW_VisibilityChangingObject>(true).ToList();
             _visibilityChangingObjects.ForEach(x => x.Init());
+
+            _colors = new Color[MapSizeX * MapSizeY];
 
             UpdateFogCircle(_updateCancellationSource.Token).Forget();
         }
