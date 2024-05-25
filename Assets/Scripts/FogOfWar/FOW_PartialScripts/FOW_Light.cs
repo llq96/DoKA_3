@@ -48,12 +48,12 @@ namespace VladB.Doka.FogOfWar
                         int finalPosY = startPosY + pointData.PosY;
 
                         if (!IsInMap(finalPosX, finalPosY)) break;
-                        if (_info[finalPosX, finalPosY] == MapState.Blocker)
-                        {
-                            // _info[finalPosX, finalPosY] = MapState.VisibleBlocker;
-                            _blockersAtMap[finalPosX, finalPosY].ForEach(x => x.IsVisible = true);
-                            break;
-                        }
+                        // if (_info[finalPosX, finalPosY] == MapState.Blocker)
+                        // {
+                        //     // _info[finalPosX, finalPosY] = MapState.VisibleBlocker;
+                        //     _blockersAtMap[finalPosX, finalPosY].ForEach(x => x.IsVisible = true);
+                        //     break;
+                        // }
 
                         // if (_info[finalPosX, finalPosY] == MapState.Blocker) break;
 
